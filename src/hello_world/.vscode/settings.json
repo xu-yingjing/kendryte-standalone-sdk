@@ -1,0 +1,6 @@
+{
+    "cmake.sourceDirectory": "${workspaceFolder}/../..",
+    "cmake.buildEnvironment": {
+        "PROJ": "hello_world"
+    }
+}
