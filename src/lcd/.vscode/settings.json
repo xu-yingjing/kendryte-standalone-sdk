@@ -2,6 +2,6 @@
     "cmake.sourceDirectory": "${workspaceFolder}/../..",
     "cmake.configureArgs": [
         "-DBOARD=CanMV-K210",
-        "-DPROJ=hello_world"
+        "-DPROJ=lcd"
     ]
 }

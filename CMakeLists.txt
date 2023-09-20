@@ -4,6 +4,11 @@
 set(BUILDING_SDK "yes" CACHE INTERNAL "")
 
 # basic config
+if (NOT BOARD)
+    message(FATAL_ERROR "BOARD not set, set it then configure. e.g. -DBOARD=CanMV-K210")
+else()
+    message("BOARD = ${BOARD}")
+endif ()
 if (NOT PROJ)
     get_filename_component(PROJ ${CMAKE_CURRENT_BINARY_DIR} DIRECTORY)
     get_filename_component(PROJ ${PROJ} NAME)
@@ -12,7 +17,7 @@ if (NOT PROJ)
 else()
     message("PROJ = ${PROJ}")
 endif ()
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.8)
 include(./cmake/common.cmake)
 project(${PROJ} C CXX ASM)
 
@@ -21,6 +26,7 @@ include(./cmake/macros.internal.cmake)
 header_directories(${SDK_ROOT}/lib)
 header_directories(src/${PROJ})
 header_directories(kendryte-standalone-demo/${PROJ})
+header_directories(src/BSP/${BOARD}/include)
 
 add_subdirectory(third_party/gsl-lite)
 add_subdirectory(third_party/mpark-variant)
@@ -30,6 +36,6 @@ add_subdirectory(lib)
 
 # compile project
 add_source_files(src/${PROJ}/*.c src/${PROJ}/*.s src/${PROJ}/*.S src/${PROJ}/*.cpp)
-add_source_files(kendryte-standalone-demo/${PROJ}/*.c kendryte-standalone-demo/${PROJ}/*.s kendryte-standalone-demo/${PROJ}/*.S kendryte-standalone-demo/${PROJ}/*.cpp)
+add_source_files(src/BSP/${BOARD}/*.c)
 include(./cmake/executable.cmake)
 

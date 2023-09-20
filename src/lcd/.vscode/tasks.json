@@ -1,0 +1,75 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "inputs": [
+        {
+            "id": "Port",
+            "type": "promptString",
+            "description": "Enter the port of device, like 'COM0' or '/dev/tty0'",
+            "default": "COM13"
+        },
+        {
+            "id": "Baudrate",
+            "type": "promptString",
+            "description": "Enter the UART baudrate in bps for uploading firmware",
+            "default": "2000000"
+        }
+    ],
+    "tasks": [
+        {
+            "label": "Flash",
+            "type": "shell",
+            "problemMatcher": [],
+            "command": "kflash",
+            "args": [
+                "-p",
+                "${input:Port}",
+                "-b",
+                "${input:Baudrate}",
+                "${workspaceFolder}/build/${config:cmake.buildEnvironment.PROJ}.bin"
+            ]
+        },
+        {
+            "label": "Flash with terminal",
+            "type": "shell",
+            "problemMatcher": [],
+            "command": "kflash",
+            "args": [
+                "-p",
+                "${input:Port}",
+                "-b",
+                "${input:Baudrate}",
+                "-t",
+                "",
+                "${workspaceFolder}/build/${config:cmake.buildEnvironment.PROJ}.bin"
+            ]
+        },
+        {
+            "label": "(For test)Echo variables",
+            "type": "shell",
+            "problemMatcher": [],
+            "command": "echo",
+            "args": [
+                "userHome:${userHome}",
+                "workspaceFolder:${workspaceFolder}",
+                "workspaceFolderBasename:${workspaceFolderBasename}",
+                "file:${file}",
+                "fileWorkspaceFolder:${fileWorkspaceFolder}",
+                "relativeFile:${relativeFile}",
+                "relativeFileDirname:${relativeFileDirname}",
+                "fileBasename:${fileBasename}",
+                "fileBasenameNoExtension:${fileBasenameNoExtension}",
+                "fileExtname:${fileExtname}",
+                "fileDirname:${fileDirname}",
+                "fileDirnameBasename:${fileDirnameBasename}",
+                "cwd:${cwd}",
+                "lineNumber:${lineNumber}",
+                // "selectedText:${selectedText}",
+                "execPath:${execPath}",
+                // "defaultBuildTask:${defaultBuildTask}",
+                "pathSeparator:${pathSeparator}"
+            ]
+        }
+    ]
+}

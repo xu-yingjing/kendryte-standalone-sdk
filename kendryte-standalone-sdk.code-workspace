@@ -4,7 +4,13 @@
 			"path": "."
 		},
 		{
+			"path": "src/BSP"
+		},
+		{
 			"path": "src/hello_world"
+		},
+		{
+			"path": "src/lcd"
 		}
 	]
 }
