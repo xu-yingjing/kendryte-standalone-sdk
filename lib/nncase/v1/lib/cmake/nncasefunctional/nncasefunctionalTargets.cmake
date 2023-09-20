@@ -19,7 +19,7 @@ set(CMAKE_IMPORT_FILE_VERSION 1)
 set(_cmake_targets_defined "")
 set(_cmake_targets_not_defined "")
 set(_cmake_expected_targets "")
-foreach(_cmake_expected_target IN ITEMS kernels runtime nncaseruntime runtime_stackvm kernels_k210 kendryte runtime_k210 nncase_rt_modules_k210)
+foreach(_cmake_expected_target IN ITEMS functional nncasefunctional)
   list(APPEND _cmake_expected_targets "${_cmake_expected_target}")
   if(TARGET "${_cmake_expected_target}")
     list(APPEND _cmake_targets_defined "${_cmake_expected_target}")
@@ -55,58 +55,19 @@ if(_IMPORT_PREFIX STREQUAL "/")
   set(_IMPORT_PREFIX "")
 endif()
 
-# Create imported target kernels
-add_library(kernels INTERFACE IMPORTED)
+# Create imported target functional
+add_library(functional INTERFACE IMPORTED)
 
-set_target_properties(kernels PROPERTIES
+set_target_properties(functional PROPERTIES
   INTERFACE_LINK_LIBRARIES "gsl::gsl-lite;mpark_variant::mpark_variant"
 )
 
-# Create imported target runtime
-add_library(runtime INTERFACE IMPORTED)
+# Create imported target nncasefunctional
+add_library(nncasefunctional STATIC IMPORTED)
 
-set_target_properties(runtime PROPERTIES
-  INTERFACE_LINK_LIBRARIES "gsl::gsl-lite;mpark_variant::mpark_variant;\$<LINK_ONLY:kernels>"
-)
-
-# Create imported target nncaseruntime
-add_library(nncaseruntime STATIC IMPORTED)
-
-set_target_properties(nncaseruntime PROPERTIES
+set_target_properties(nncasefunctional PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
-  INTERFACE_LINK_LIBRARIES "\$<LINK_ONLY:kernels>;\$<LINK_ONLY:runtime>;\$<LINK_ONLY:runtime_stackvm>;gsl::gsl-lite;mpark_variant::mpark_variant"
-)
-
-# Create imported target runtime_stackvm
-add_library(runtime_stackvm INTERFACE IMPORTED)
-
-set_target_properties(runtime_stackvm PROPERTIES
-  INTERFACE_LINK_LIBRARIES "runtime;\$<LINK_ONLY:kernels>"
-)
-
-# Create imported target kernels_k210
-add_library(kernels_k210 INTERFACE IMPORTED)
-
-set_target_properties(kernels_k210 PROPERTIES
-  INTERFACE_LINK_LIBRARIES "nncaseruntime;\$<LINK_ONLY:kendryte>"
-)
-
-# Create imported target kendryte
-add_library(kendryte STATIC IMPORTED)
-
-# Create imported target runtime_k210
-add_library(runtime_k210 INTERFACE IMPORTED)
-
-set_target_properties(runtime_k210 PROPERTIES
-  INTERFACE_LINK_LIBRARIES "nncaseruntime;\$<LINK_ONLY:kernels_k210>;\$<LINK_ONLY:kendryte>"
-)
-
-# Create imported target nncase_rt_modules_k210
-add_library(nncase_rt_modules_k210 STATIC IMPORTED)
-
-set_target_properties(nncase_rt_modules_k210 PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
-  INTERFACE_LINK_LIBRARIES "\$<LINK_ONLY:runtime_k210>;\$<LINK_ONLY:kernels_k210>"
+  INTERFACE_LINK_LIBRARIES "\$<LINK_ONLY:functional>;\$<LINK_ONLY:runtime>;gsl::gsl-lite;mpark_variant::mpark_variant"
 )
 
 if(CMAKE_VERSION VERSION_LESS 3.0.0)
@@ -114,7 +75,7 @@ if(CMAKE_VERSION VERSION_LESS 3.0.0)
 endif()
 
 # Load information for each installed configuration.
-file(GLOB _cmake_config_files "${CMAKE_CURRENT_LIST_DIR}/nncaseruntimeTargets-*.cmake")
+file(GLOB _cmake_config_files "${CMAKE_CURRENT_LIST_DIR}/nncasefunctionalTargets-*.cmake")
 foreach(_cmake_config_file IN LISTS _cmake_config_files)
   include("${_cmake_config_file}")
 endforeach()
@@ -145,8 +106,24 @@ endforeach()
 unset(_cmake_target)
 unset(_cmake_import_check_targets)
 
-# This file does not depend on other imported targets which have
-# been exported from the same project but in a separate export set.
+# Make sure the targets which have been exported in some other
+# export set exist.
+unset(${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE_targets)
+foreach(_target "runtime" )
+  if(NOT TARGET "${_target}" )
+    set(${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE_targets "${${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE_targets} ${_target}")
+  endif()
+endforeach()
+
+if(DEFINED ${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE_targets)
+  if(CMAKE_FIND_PACKAGE_NAME)
+    set( ${CMAKE_FIND_PACKAGE_NAME}_FOUND FALSE)
+    set( ${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE "The following imported targets are referenced, but are missing: ${${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE_targets}")
+  else()
+    message(FATAL_ERROR "The following imported targets are referenced, but are missing: ${${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE_targets}")
+  endif()
+endif()
+unset(${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE_targets)
 
 # Commands beyond this point should not need to know the version.
 set(CMAKE_IMPORT_FILE_VERSION)
