@@ -1,0 +1,55 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "inputs": [
+        {
+            "id": "Project",
+            "type": "promptString",
+            "description": "Enter project's name, like 'hello_world'",
+            "default": "${fileDirnameBasename}"
+        },
+        {
+            "id": "Port",
+            "type": "promptString",
+            "description": "Enter the port of device, like 'COM0' or '/dev/tty0'",
+            "default": "COM13"
+        },
+        {
+            "id": "Baudrate",
+            "type": "promptString",
+            "description": "Enter the UART baudrate in bps for uploading firmware",
+            "default": "2000000"
+        }
+    ],
+    "tasks": [
+        {
+            "label": "Flash",
+            "type": "shell",
+            "problemMatcher": [],
+            "command": "kflash",
+            "args": [
+                "-p",
+                "${input:Port}",
+                "-b",
+                "${input:Baudrate}",
+                "${workspaceFolder}/src/${input:Project}/build/${input:Project}.bin"
+            ]
+        },
+        {
+            "label": "Flash with terminal",
+            "type": "shell",
+            "problemMatcher": [],
+            "command": "kflash",
+            "args": [
+                "-p",
+                "${input:Port}",
+                "-b",
+                "${input:Baudrate}",
+                "-t",
+                "",
+                "${workspaceFolder}/src/${input:Project}/build/${input:Project}.bin"
+            ]
+        }
+    ]
+}
