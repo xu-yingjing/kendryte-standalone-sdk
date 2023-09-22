@@ -1,6 +1,7 @@
 #include "sysctl.h"
 #include "lcd.h"
 #include "camera.h"
+#include "iomem.h"
 #include <stddef.h>
 
 int main(void)
@@ -19,11 +20,15 @@ int main(void)
     camera_init(24000000);
     camera_set_pixformat(PIXFORMAT_RGB565);
     camera_set_framesize(320, 240);
-    camera_set_framesize(224, 224);
-
+    
+    disp = (uint8_t *)iomem_malloc(320 * 240 * 2);
     while (1)
     {
-        camera_snapshot(&disp, NULL);
-        lcd_draw_picture(8, 8, 224, 224, (uint16_t *)disp);
+        while (camera_snapshot(NULL, NULL) == 0)
+        {
+            camera_snapshot_release();
+        }
+        while (camera_snapshot_copy(disp, NULL) != 0);
+        lcd_draw_picture(0, 0, 320, 240, (uint16_t *)disp);
     }
 }

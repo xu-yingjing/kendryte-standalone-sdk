@@ -38,5 +38,7 @@ int camera_init(uint32_t xclk_rate);
 int camera_set_pixformat(pixformat_t format);
 int camera_set_framesize(uint16_t width, uint16_t height);
 int camera_snapshot(uint8_t **display, uint8_t **ai);
+int camera_snapshot_release(void);
+int camera_snapshot_copy(uint8_t *display, uint8_t *ai);
 
 #endif

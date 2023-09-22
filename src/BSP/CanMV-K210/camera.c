@@ -3,6 +3,7 @@
 #include "plic.h"
 #include "iomem.h"
 #include <stddef.h>
+#include <string.h>
 
 #if defined(CAMERA_SENSOR_OV2640)
 #include "ov2640.h"
@@ -131,12 +132,14 @@ static void camera_dvp_run(uint8_t enable)
 {
     if (enable != 0)
     {
+        /* Enable DVP interrupt */
         dvp_clear_interrupt(DVP_STS_FRAME_START | DVP_STS_FRAME_FINISH);
         dvp_config_interrupt(DVP_CFG_START_INT_ENABLE | DVP_CFG_FINISH_INT_ENABLE, 1);
         plic_irq_enable(IRQN_DVP_INTERRUPT);
     }
     else
     {
+        /* Disable DVP interrupt */
         plic_irq_disable(IRQN_DVP_INTERRUPT);
         dvp_config_interrupt(DVP_CFG_START_INT_ENABLE | DVP_CFG_FINISH_INT_ENABLE, 0);
     }
@@ -146,32 +149,47 @@ static int camera_dvp_irq_callback(void *ctx)
 {
     if (dvp_get_interrupt(DVP_STS_FRAME_START))
     {
-        /* Start capture if framebuffer is not full */
+        /* Start DVP capture if framebuffer is not full */
         if (fb.full == 0)
         {
             dvp_start_convert();
         }
+
         dvp_clear_interrupt(DVP_STS_FRAME_START);
     }
     else if (dvp_get_interrupt(DVP_STS_FRAME_FINISH))
     {
+        /* Clean framebuffer empty flag, cause DVP capture is finished */
         fb.empty = 0;
+
+        /* Update framebuffer write index for next DVP capture */
         fb.write_index++;
         if (fb.write_index == CAMERA_FRAMEBUFFER_NUM)
         {
             fb.write_index = 0;
         }
+
+        /* Check framebuffer is full or not */
         if (fb.write_index == fb.read_index)
         {
+            /* 
+             * If write index is increased to equal read index,
+             * it means framebuffer is full
+             */
             fb.full = 1;
         }
         else
         {
+            /* 
+             * Set next capture's framebuffer only when framebuffer is not full,
+             * otherwise do it after the first time framebuffer read release after this full status
+             */
             dvp_set_ai_addr((uint32_t)fb.ai[fb.write_index] + (0 * fb.width * fb.height),
                             (uint32_t)fb.ai[fb.write_index] + (1 * fb.width * fb.height),
                             (uint32_t)fb.ai[fb.write_index] + (2 * fb.width * fb.height));
             dvp_set_display_addr((uint32_t)fb.disp[fb.write_index]);
         }
+
         dvp_clear_interrupt(DVP_STS_FRAME_FINISH);
     }
     else
@@ -341,7 +359,13 @@ int camera_set_framesize(uint16_t width, uint16_t height)
 
 int camera_snapshot(uint8_t **display, uint8_t **ai)
 {
-    while (fb.empty == 1);
+    /* Return error if framebuffer is empty */
+    if (fb.empty == 1)
+    {
+        return 1;
+    }
+
+    /* Get data */
     if (display != NULL)
     {
         *display = fb.disp[fb.read_index];
@@ -350,6 +374,38 @@ int camera_snapshot(uint8_t **display, uint8_t **ai)
     {
         *ai = fb.ai[fb.read_index];
     }
+
+    return 0;
+}
+
+int camera_snapshot_release(void)
+{
+    /* Return error if framebuffer is empty */
+    if (fb.empty == 1)
+    {
+        return 1;
+    }
+
+    /* Update framebuffer read index for next framebuffer read */
+    fb.read_index++;
+    if (fb.read_index == CAMERA_FRAMEBUFFER_NUM)
+    {
+        fb.read_index = 0;
+    }
+
+    /* Check framebuffer is empty or not */
+    if (fb.read_index == fb.write_index)
+    {
+        /* 
+         * If read index is increased to equal read index,
+         * it means framebuffer is empty
+         */
+        fb.empty = 1;
+    }
+
+    /* Set next capture's framebuffer and clean framebuffer's full flag,
+     * cause there is a framebuffer to be released when framebuffer is full
+     */
     if (fb.full == 1)
     {
         dvp_set_ai_addr((uint32_t)fb.ai[fb.write_index] + (0 * fb.width * fb.height),
@@ -358,15 +414,30 @@ int camera_snapshot(uint8_t **display, uint8_t **ai)
         dvp_set_display_addr((uint32_t)fb.disp[fb.write_index]);
         fb.full = 0;
     }
-    fb.read_index++;
-    if (fb.read_index == CAMERA_FRAMEBUFFER_NUM)
+
+    return 0;
+}
+
+int camera_snapshot_copy(uint8_t *display, uint8_t *ai)
+{
+    /* Return error if framebuffer is empty */
+    if (fb.empty == 1)
     {
-        fb.read_index = 0;
+        return 1;
     }
-    if (fb.read_index == fb.write_index)
+
+    /* Copy data */
+    if (display != NULL)
     {
-        fb.empty = 1;
+        memcpy(display, fb.disp[fb.read_index], fb.width * fb.height * fb.bpp);
     }
+    if (ai != NULL)
+    {
+        memcpy(ai, fb.ai[fb.read_index], fb.width * fb.height * 3);
+    }
+
+    /* Release framebuffer that has been read */
+    camera_snapshot_release();
 
     return 0;
 }
