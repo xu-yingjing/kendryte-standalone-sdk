@@ -2,7 +2,9 @@
 
 # create driver library
 
-ADD_SUBDIRECTORY(nncase)
+if (NOT USENNCASE STREQUAL "0")
+        ADD_SUBDIRECTORY(nncase)
+endif ()
 
 FILE(GLOB_RECURSE LIB_SRC
         "${CMAKE_CURRENT_LIST_DIR}/bsp/*.h"
@@ -42,5 +44,7 @@ SET_SOURCE_FILES_PROPERTIES(${ASSEMBLY_FILES} PROPERTIES COMPILE_FLAGS "-x assem
 ADD_LIBRARY(kendryte
         ${LIB_SRC}
         )
-TARGET_LINK_LIBRARIES(kendryte PUBLIC nncase-wrapper)
+if (NOT USENNCASE STREQUAL "0")
+        TARGET_LINK_LIBRARIES(kendryte PUBLIC nncase-wrapper)
+endif ()
 SET_TARGET_PROPERTIES(kendryte PROPERTIES LINKER_LANGUAGE C)
