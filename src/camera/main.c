@@ -1,8 +1,9 @@
-#include "sysctl.h"
-#include "lcd.h"
-#include "camera.h"
-#include "iomem.h"
 #include <stddef.h>
+#include "sysctl.h"
+#include "iomem.h"
+#include "lcd.h"
+#define CAMERA_FRAMEBUFFER_NUM 2
+#include "camera.h"
 
 int main(void)
 {
@@ -17,18 +18,16 @@ int main(void)
 
     lcd_init();
     lcd_set_direction(DIR_YX_RLUD);
-    camera_init(24000000);
+    camera_init(0);
     camera_set_pixformat(PIXFORMAT_RGB565);
     camera_set_framesize(320, 240);
     
-    disp = (uint8_t *)iomem_malloc(320 * 240 * 2);
     while (1)
     {
-        while (camera_snapshot(NULL, NULL) == 0)
+        if (camera_snapshot(&disp, NULL) == 0)
         {
+            lcd_draw_picture(0, 0, 320, 240, (uint16_t *)disp);
             camera_snapshot_release();
         }
-        while (camera_snapshot_copy(disp, NULL) != 0);
-        lcd_draw_picture(0, 0, 320, 240, (uint16_t *)disp);
     }
 }

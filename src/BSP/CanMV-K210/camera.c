@@ -10,9 +10,6 @@
 #endif
 
 /* Variable for sensor */
-#if !defined(CAMERA_SENSOR_OV2640)
-#define CAMERA_SENSOR_OV2640
-#endif
 static const camera_sensor_t *sensor;
 static const camera_sensor_t *sensors[] =
 {
@@ -22,12 +19,8 @@ static const camera_sensor_t *sensors[] =
 };
 
 /* Variable for framebuffer */
-#if !defined(CAMERA_FRAMEBUFFER_NUM)
-#define CAMERA_FRAMEBUFFER_NUM 1
-#else
 #if CAMERA_FRAMEBUFFER_NUM < 1
 #error The number of framebuffer must be greater than 0
-#endif
 #endif
 typedef struct camera_fb
 {
@@ -231,8 +224,9 @@ int camera_init(uint32_t xclk_rate)
         return 1;
     }
 
-    /* Configure DVP */
+    /* Configure DVP and disable DVP capture */
     camera_dvp_init();
+    camera_dvp_run(0);
 
     return 0;
 }

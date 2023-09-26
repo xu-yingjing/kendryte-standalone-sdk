@@ -4,20 +4,40 @@
 #include "dvp.h"
 
 /* Configure connect pin */
-#define CAMERA_SDA_PIN      40
-#define CAMERA_SCL_PIN      41
-#define CAMERA_RST_PIN      42
-#define CAMERA_VSYNC_PIN    43
-#define CAMERA_PWDN_PIN     44
-#define CAMERA_HSYNC_PIN    45
-#define CAMERA_XCLK_PIN     46
-#define CAMERA_PCLK_PIN     47
+#if !defined(CAMERA_SDA_PIN)
+#define CAMERA_SDA_PIN 40
+#endif
+#if !defined(CAMERA_SCL_PIN)
+#define CAMERA_SCL_PIN 41
+#endif
+#if !defined(CAMERA_RST_PIN)
+#define CAMERA_RST_PIN 42
+#endif
+#if !defined(CAMERA_VSYNC_PIN)
+#define CAMERA_VSYNC_PIN 43
+#endif
+#if !defined(CAMERA_PWDN_PIN)
+#define CAMERA_PWDN_PIN 44
+#endif
+#if !defined(CAMERA_HSYNC_PIN)
+#define CAMERA_HSYNC_PIN 45
+#endif
+#if !defined(CAMERA_XCLK_PIN)
+#define CAMERA_XCLK_PIN 46
+#endif
+#if !defined(CAMERA_PCLK_PIN)
+#define CAMERA_PCLK_PIN 47
+#endif
 
 /* Configure support sensor */
+#if !defined(CAMERA_SENSOR_OV2640)
 #define CAMERA_SENSOR_OV2640
+#endif
 
 /* Configure number of framebuffer */
+#if !defined(CAMERA_FRAMEBUFFER_NUM)
 #define CAMERA_FRAMEBUFFER_NUM 2
+#endif
 
 typedef enum
 {
