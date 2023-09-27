@@ -1,13 +1,13 @@
 #include "ov2640.h"
+#include <math.h>
 #include "dvp.h"
+#include "sleep.h"
 
 #define OV2640_ADDR 0x60
 #define OV2640_PID  0x2642
 
 static const uint8_t ov2640_config[][2] =
 {
-    {0xFF, 0x01},
-    {0x12, 0x80},
     {0xFF, 0x00},
     {0x2C, 0xFF},
     {0x2E, 0xDF},
@@ -15,7 +15,7 @@ static const uint8_t ov2640_config[][2] =
     {0x3C, 0x32},
     {0x11, 0x00},
     {0x09, 0x02},
-    {0x04, 0x58},
+    {0x04, 0x28},
     {0x13, 0xE5},
     {0x14, 0x48},
     {0x2C, 0x0C},
@@ -60,8 +60,6 @@ static const uint8_t ov2640_config[][2] =
     {0x70, 0x02},
     {0x71, 0x94},
     {0x73, 0xC1},
-    {0x3D, 0x34},
-    {0x5A, 0x57},
     {0x12, 0x40},
     {0x17, 0x11},
     {0x18, 0x43},
@@ -176,7 +174,7 @@ static const uint8_t ov2640_config[][2] =
     {0x5A, 0xC8},
     {0x5B, 0x96},
     {0x5C, 0x00},
-    {0xD3, 0x02},
+    {0xD3, 0x82},
     {0xC3, 0xED},
     {0x7F, 0x00},
     {0xDA, 0x08},
@@ -185,13 +183,6 @@ static const uint8_t ov2640_config[][2] =
     {0xE0, 0x00},
     {0xDD, 0x7F},
     {0x05, 0x00},
-    {0xFF, 0x00},
-    {0xE0, 0x04},
-    {0x5A, 0x50},
-    {0x5B, 0x3C},
-    {0x5C, 0x00},
-    {0xE0, 0x00},
-    {0x00, 0x00}
 };
 
 static int ov2640_init(void)
@@ -199,6 +190,7 @@ static int ov2640_init(void)
     uint16_t product_id;
     uint16_t index;
 
+    /* Check product ID */
     dvp_sccb_send_data(OV2640_ADDR, 0xFF, 0x01);
     product_id = (dvp_sccb_receive_data(OV2640_ADDR, 0x0A) << 8) | dvp_sccb_receive_data(OV2640_ADDR, 0x0B);
     if (product_id != OV2640_PID)
@@ -206,6 +198,12 @@ static int ov2640_init(void)
         return 1;
     }
 
+    /* Software reset */
+    dvp_sccb_send_data(OV2640_ADDR, 0xFF, 0x01);
+    dvp_sccb_send_data(OV2640_ADDR, 0x12, 0x80);
+    msleep(5);
+
+    /* Initlize registers */
     for (index=0; index<(sizeof(ov2640_config)/sizeof(ov2640_config[0])); index++)
     {
         dvp_sccb_send_data(OV2640_ADDR, ov2640_config[index][0], ov2640_config[index][1]);
@@ -221,13 +219,50 @@ static int ov2640_set_pixformat(pixformat_t format)
 
 static int ov2640_set_framesize(uint16_t width, uint16_t height)
 {
-    width >>= 2;
-    height >>= 2;
+    float ratio;
+    uint16_t H_SIZE;
+    uint16_t V_SIZE;
+    uint16_t OFFSET_X;
+    uint16_t OFFSET_Y;
+    uint16_t OUTW;
+    uint16_t OUTH;
+
+    ratio = (800.f / 600.f) / ((float)width / height);
+    if (fabsf(ratio - 1) < 0.0001f)
+    {
+        H_SIZE = 800 >> 2;
+        V_SIZE = 600 >> 2;
+        OFFSET_X = 0;
+        OFFSET_Y = 0;
+    }
+    else if (ratio > 1)
+    {
+        H_SIZE = ((uint16_t)(800 / ratio) >> 2);
+        V_SIZE = 600 >> 2;
+        OFFSET_X = (800 - (H_SIZE << 2)) >> 1;
+        OFFSET_Y = 0;
+    }
+    else
+    {
+        H_SIZE = 800 >> 2;
+        V_SIZE = ((uint16_t)(600 * ratio) >> 2);
+        OFFSET_X = 0;
+        OFFSET_Y = (600 - (V_SIZE << 2)) >> 1;
+    }
+    OUTW = width >> 2;
+    OUTH = height >> 2;
+
     dvp_sccb_send_data(OV2640_ADDR, 0xFF, 0x00);
     dvp_sccb_send_data(OV2640_ADDR, 0xE0, 0x04);
-    dvp_sccb_send_data(OV2640_ADDR, 0x5A, (uint8_t)(width & 0x00FF));
-    dvp_sccb_send_data(OV2640_ADDR, 0x5B, (uint8_t)(height & 0x00FF));
-    dvp_sccb_send_data(OV2640_ADDR, 0x5C, ((uint8_t)(width >> 8) & 0x03) | ((uint8_t)(height >> 6) & 0x04));
+    dvp_sccb_send_data(OV2640_ADDR, 0x51, (uint8_t)(H_SIZE & 0xFF));
+    dvp_sccb_send_data(OV2640_ADDR, 0x52, (uint8_t)(V_SIZE & 0xFF));
+    dvp_sccb_send_data(OV2640_ADDR, 0x53, (uint8_t)(OFFSET_X & 0xFF));
+    dvp_sccb_send_data(OV2640_ADDR, 0x54, (uint8_t)(OFFSET_Y & 0xFF));
+    dvp_sccb_send_data(OV2640_ADDR, 0x55, (uint8_t)(((OFFSET_X >> 8) & 0x7) << 0) | (((H_SIZE >> 8) & 0x1) << 3) | (((OFFSET_Y >> 8) & 0x7) << 4) | (((V_SIZE >> 8) & 0x1) << 7));
+    dvp_sccb_send_data(OV2640_ADDR, 0x57, (uint8_t)(((H_SIZE >> 9) & 0x1) << 7));
+    dvp_sccb_send_data(OV2640_ADDR, 0x5A, (uint8_t)(OUTW & 0xFF));
+    dvp_sccb_send_data(OV2640_ADDR, 0x5B, (uint8_t)(OUTH & 0xFF));
+    dvp_sccb_send_data(OV2640_ADDR, 0x5C, (uint8_t)(((OUTW >> 8) & 0x3) << 0) | (((OUTH >> 8) & 0x1) << 2));
     dvp_sccb_send_data(OV2640_ADDR, 0xE0, 0x00);
 
     return 0;

@@ -5,6 +5,9 @@
 #define CAMERA_FRAMEBUFFER_NUM 2
 #include "camera.h"
 
+#define CAMERA_WIDTH    224
+#define CAMERA_HEIGHT   224
+
 int main(void)
 {
     uint8_t *disp;
@@ -20,13 +23,13 @@ int main(void)
     lcd_set_direction(DIR_YX_LRUD);
     camera_init(0);
     camera_set_pixformat(PIXFORMAT_RGB565);
-    camera_set_framesize(320, 240);
+    camera_set_framesize(CAMERA_WIDTH, CAMERA_HEIGHT);
     
     while (1)
     {
         if (camera_snapshot(&disp, NULL) == 0)
         {
-            lcd_draw_picture(0, 0, 320, 240, (uint16_t *)disp);
+            lcd_draw_picture(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT, (uint16_t *)disp);
             camera_snapshot_release();
         }
     }

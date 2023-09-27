@@ -196,7 +196,6 @@ static int camera_dvp_irq_callback(void *ctx)
 static void camera_dvp_init(void)
 {
     /* Configure DVP base parameter */
-    dvp_enable_burst();
     dvp_set_output_enable(DVP_OUTPUT_AI, 1);
     dvp_set_output_enable(DVP_OUTPUT_DISPLAY, 1);
     dvp_set_image_format(DVP_CFG_RGB_FORMAT);
@@ -205,6 +204,7 @@ static void camera_dvp_init(void)
                     (uint32_t)fb.ai[fb.write_index] + (1 * fb.width * fb.height),
                     (uint32_t)fb.ai[fb.write_index] + (2 * fb.width * fb.height));
     dvp_set_display_addr((uint32_t)fb.disp[fb.write_index]);
+    dvp_disable_burst();
     dvp_disable_auto();
 
     /* Configure interrupt */
