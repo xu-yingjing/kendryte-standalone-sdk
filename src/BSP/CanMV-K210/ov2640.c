@@ -233,6 +233,44 @@ static int ov2640_set_framesize(uint16_t width, uint16_t height)
     return 0;
 }
 
+static int ov2640_set_hmirror(uint8_t enable)
+{
+    uint8_t REG04;
+
+    dvp_sccb_send_data(OV2640_ADDR, 0xFF, 0x01);
+    REG04 = dvp_sccb_receive_data(OV2640_ADDR, 0x04);
+    if (enable != 0)
+    {
+        REG04 |= (1 << 7);
+    }
+    else
+    {
+        REG04 &= ~(1 << 7);
+    }
+    dvp_sccb_send_data(OV2640_ADDR, 0x04, REG04);
+
+    return 0;
+}
+
+static int ov2640_set_vflip(uint8_t enable)
+{
+    uint8_t REG04;
+
+    dvp_sccb_send_data(OV2640_ADDR, 0xFF, 0x01);
+    REG04 = dvp_sccb_receive_data(OV2640_ADDR, 0x04);
+    if (enable != 0)
+    {
+        REG04 |= ((1 << 6) | (1 << 4));
+    }
+    else
+    {
+        REG04 &= ~((1 << 6) | (1 << 4));
+    }
+    dvp_sccb_send_data(OV2640_ADDR, 0x04, REG04);
+
+    return 0;
+}
+
 const camera_sensor_t camera_ov2640 =
 {
     .reg_len = 8,
@@ -240,4 +278,6 @@ const camera_sensor_t camera_ov2640 =
     .init = ov2640_init,
     .set_pixformat = ov2640_set_pixformat,
     .set_framesize = ov2640_set_framesize,
+    .set_hmirror = ov2640_set_hmirror,
+    .set_vflip = ov2640_set_vflip,
 };

@@ -11,6 +11,8 @@ int main(void)
     sysctl_set_spi0_dvp_data(1);
 
     lcd_init();
+    lcd_set_direction(DIR_YX_LRUD);
+    
     lcd_draw_fill_rectangle(10, 10, 50, 100, 0xF800);
 
     while (1)

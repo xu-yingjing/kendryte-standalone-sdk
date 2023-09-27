@@ -351,6 +351,16 @@ int camera_set_framesize(uint16_t width, uint16_t height)
     return 0;
 }
 
+int camera_set_hmirror(uint8_t enable)
+{
+    return sensor->set_hmirror(enable);
+}
+
+int camera_set_vflip(uint8_t enable)
+{
+    return sensor->set_vflip(enable);
+}
+
 int camera_snapshot(uint8_t **display, uint8_t **ai)
 {
     /* Return error if framebuffer is empty */

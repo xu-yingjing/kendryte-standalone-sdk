@@ -17,7 +17,7 @@ int main(void)
     sysctl_set_spi0_dvp_data(1);
 
     lcd_init();
-    lcd_set_direction(DIR_YX_RLUD);
+    lcd_set_direction(DIR_YX_LRUD);
     camera_init(0);
     camera_set_pixformat(PIXFORMAT_RGB565);
     camera_set_framesize(320, 240);
