@@ -4,21 +4,9 @@
 #include "spi.h"
 #include "sleep.h"
 
-#define LCD_CS_PIN          36
-#define LCD_RTS_PIN         37
-#define LCD_DC_PIN          38
-#define LCD_WR_PIN          39
-
-#define LCD_DC_GPIOHS_NUM   31
-#define LCD_RTS_GPIOHS_NUM  30
-
-#define LCD_SPI             SPI_DEVICE_0
-#define LCD_SPI_CS_NUM      SPI_CHIP_SELECT_3
-#define LCD_SPI_DMA_CH      DMAC_CHANNEL2
-
 static void lcd_write_command(uint8_t cmd)
 {
-    gpiohs_set_pin(LCD_DC_GPIOHS_NUM, GPIO_PV_LOW);
+    gpiohs_set_pin(LCD_DCX_GPIOHS_NUM, GPIO_PV_LOW);
     spi_init(LCD_SPI, SPI_WORK_MODE_0, SPI_FF_OCTAL, 8, 0);
     spi_init_non_standard(LCD_SPI, 8, 0, 0, SPI_AITM_AS_FRAME_FORMAT);
     spi_send_data_normal_dma(LCD_SPI_DMA_CH, LCD_SPI, LCD_SPI_CS_NUM, &cmd, 1, SPI_TRANS_CHAR);
@@ -26,7 +14,7 @@ static void lcd_write_command(uint8_t cmd)
 
 static void lcd_write_data_8b(uint8_t *dat, uint32_t len)
 {
-    gpiohs_set_pin(LCD_DC_GPIOHS_NUM, GPIO_PV_HIGH);
+    gpiohs_set_pin(LCD_DCX_GPIOHS_NUM, GPIO_PV_HIGH);
     spi_init(LCD_SPI, SPI_WORK_MODE_0, SPI_FF_OCTAL, 8, 0);
     spi_init_non_standard(LCD_SPI, 0, 8, 0, SPI_AITM_AS_FRAME_FORMAT);
     spi_send_data_normal_dma(LCD_SPI_DMA_CH, LCD_SPI, LCD_SPI_CS_NUM, dat, len, SPI_TRANS_CHAR);
@@ -34,7 +22,7 @@ static void lcd_write_data_8b(uint8_t *dat, uint32_t len)
 
 static void lcd_write_data_32b(uint32_t *dat, uint32_t len)
 {
-    gpiohs_set_pin(LCD_DC_GPIOHS_NUM, GPIO_PV_HIGH);
+    gpiohs_set_pin(LCD_DCX_GPIOHS_NUM, GPIO_PV_HIGH);
     spi_init(LCD_SPI, SPI_WORK_MODE_0, SPI_FF_OCTAL, 32, 0);
     spi_init_non_standard(LCD_SPI, 0, 32, 0, SPI_AITM_AS_FRAME_FORMAT);
     spi_send_data_normal_dma(LCD_SPI_DMA_CH, LCD_SPI, LCD_SPI_CS_NUM, dat, len, SPI_TRANS_INT);
@@ -42,7 +30,7 @@ static void lcd_write_data_32b(uint32_t *dat, uint32_t len)
 
 static void lcd_write_data_32b_fill(uint32_t *dat, uint32_t len)
 {
-    gpiohs_set_pin(LCD_DC_GPIOHS_NUM, GPIO_PV_HIGH);
+    gpiohs_set_pin(LCD_DCX_GPIOHS_NUM, GPIO_PV_HIGH);
     spi_init(LCD_SPI, SPI_WORK_MODE_0, SPI_FF_OCTAL, 32, 0);
     spi_init_non_standard(LCD_SPI, 0, 32, 0, SPI_AITM_AS_FRAME_FORMAT);
     spi_fill_data_dma(LCD_SPI_DMA_CH, LCD_SPI, LCD_SPI_CS_NUM, dat, len);
@@ -74,29 +62,29 @@ void lcd_init(void)
     uint8_t data;
 
     /* Initialize DCX pin */
-    fpioa_set_function(LCD_DC_PIN, FUNC_GPIOHS0 + LCD_DC_GPIOHS_NUM);
-    gpiohs_set_drive_mode(LCD_DC_GPIOHS_NUM, GPIO_DM_OUTPUT);
-    gpiohs_set_pin(LCD_DC_GPIOHS_NUM, GPIO_PV_HIGH);
+    fpioa_set_function(LCD_DCX_PIN, FUNC_GPIOHS0 + LCD_DCX_GPIOHS_NUM);
+    gpiohs_set_drive_mode(LCD_DCX_GPIOHS_NUM, GPIO_DM_OUTPUT);
+    gpiohs_set_pin(LCD_DCX_GPIOHS_NUM, GPIO_PV_HIGH);
     
     /* Initialize RESET pin */
-    fpioa_set_function(LCD_RTS_PIN, FUNC_GPIOHS0 + LCD_RTS_GPIOHS_NUM);
-    gpiohs_set_drive_mode(LCD_RTS_GPIOHS_NUM, GPIO_DM_OUTPUT);
-    gpiohs_set_pin(LCD_RTS_GPIOHS_NUM, GPIO_PV_HIGH);
+    fpioa_set_function(LCD_RST_PIN, FUNC_GPIOHS0 + LCD_RST_GPIOHS_NUM);
+    gpiohs_set_drive_mode(LCD_RST_GPIOHS_NUM, GPIO_DM_OUTPUT);
+    gpiohs_set_pin(LCD_RST_GPIOHS_NUM, GPIO_PV_HIGH);
 
     /* Initialize CSX pin */
-    fpioa_set_function(LCD_CS_PIN, FUNC_SPI0_SS0 + LCD_SPI_CS_NUM);
+    fpioa_set_function(LCD_CSX_PIN, FUNC_SPI0_SS0 + LCD_SPI_CS_NUM);
 
     /* Initialize WRX pin */
-    fpioa_set_function(LCD_WR_PIN, FUNC_SPI0_SCLK);
+    fpioa_set_function(LCD_WRX_PIN, FUNC_SPI0_SCLK);
 
     /* Initialize SPI interface */
     spi_init(LCD_SPI, SPI_WORK_MODE_0, SPI_FF_OCTAL, 8, 0);
     spi_set_clk_rate(LCD_SPI, 15000000);
     
     /* Hardware reset */
-    gpiohs_set_pin(LCD_RTS_GPIOHS_NUM, GPIO_PV_LOW);
+    gpiohs_set_pin(LCD_RST_GPIOHS_NUM, GPIO_PV_LOW);
     msleep(50);
-    gpiohs_set_pin(LCD_RTS_GPIOHS_NUM, GPIO_PV_HIGH);
+    gpiohs_set_pin(LCD_RST_GPIOHS_NUM, GPIO_PV_HIGH);
     msleep(50);
 
     /* Software reset */

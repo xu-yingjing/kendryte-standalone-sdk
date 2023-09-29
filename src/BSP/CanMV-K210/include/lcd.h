@@ -3,6 +3,38 @@
 
 #include <stdint.h>
 
+/* Configure connect pin */
+#if !defined(LCD_CSX_PIN)
+#define LCD_CSX_PIN 36
+#endif
+#if !defined(LCD_RST_PIN)
+#define LCD_RST_PIN 37
+#endif
+#if !defined(LCD_DCX_PIN)
+#define LCD_DCX_PIN 38
+#endif
+#if !defined(LCD_WRX_PIN)
+#define LCD_WRX_PIN 39
+#endif
+#if !defined(LCD_DCX_GPIOHS_NUM)
+#define LCD_DCX_GPIOHS_NUM 31
+#endif
+#if !defined(LCD_RST_GPIOHS_NUM)
+#define LCD_RST_GPIOHS_NUM 30
+#endif
+
+/* Configure SPI interface */
+#if !defined(LCD_SPI)
+#define LCD_SPI SPI_DEVICE_0
+#endif
+#if !defined(LCD_SPI_CS_NUM)
+#define LCD_SPI_CS_NUM SPI_CHIP_SELECT_3
+#endif
+#if !defined(LCD_SPI_DMA_CH)
+#define LCD_SPI_DMA_CH DMAC_CHANNEL2
+#endif
+
+/* LCD information */
 #define LCD_WIDTH   320
 #define LCD_HEIGHT  240
 
