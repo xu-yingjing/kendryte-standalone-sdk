@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include "sysctl.h"
 #include "kpu.h"
+#define LCD_SPI_CLK_RATE 15000000
 #include "lcd.h"
 #define CAMERA_FRAMEBUFFER_NUM 2
 #include "camera.h"

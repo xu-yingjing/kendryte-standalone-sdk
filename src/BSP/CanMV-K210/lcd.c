@@ -79,7 +79,7 @@ void lcd_init(void)
 
     /* Initialize SPI interface */
     spi_init(LCD_SPI, SPI_WORK_MODE_0, SPI_FF_OCTAL, 8, 0);
-    spi_set_clk_rate(LCD_SPI, 15000000);
+    spi_set_clk_rate(LCD_SPI, LCD_SPI_CLK_RATE);
     
     /* Hardware reset */
     gpiohs_set_pin(LCD_RST_GPIOHS_NUM, GPIO_PV_LOW);

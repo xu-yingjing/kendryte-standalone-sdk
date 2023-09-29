@@ -1,4 +1,5 @@
 #include "sysctl.h"
+#define LCD_SPI_CLK_RATE 15000000
 #include "lcd.h"
 
 int main(void)

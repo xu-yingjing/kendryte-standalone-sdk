@@ -33,6 +33,9 @@
 #if !defined(LCD_SPI_DMA_CH)
 #define LCD_SPI_DMA_CH DMAC_CHANNEL2
 #endif
+#if !defined(LCD_SPI_CLK_RATE)
+#define LCD_SPI_CLK_RATE 15000000
+#endif
 
 /* LCD information */
 #define LCD_WIDTH   320
