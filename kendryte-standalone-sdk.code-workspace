@@ -16,6 +16,9 @@
 			"path": "src/camera"
 		},
 		{
+			"path": "src/sd_card"
+		},
+		{
 			"path": "src/yolo_20classes"
 		}
 	]
