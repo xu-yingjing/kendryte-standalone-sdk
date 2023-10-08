@@ -5,6 +5,27 @@
 #include "sysctl.h"
 #include "rtc.h"
 
+static const char *find_field(const char *string, const char interval, uint8_t index)
+{
+    uint8_t index_loop = 0;
+    const char *field = string;
+
+    while (index_loop < index)
+    {
+        while (field[0] != interval)
+        {
+            field++;
+        }
+        while (field[0] == interval)
+        {
+            field++;
+        }
+        index_loop++;
+    }
+
+    return field;
+}
+
 static void get_compile_time(rtc_date_time_t *compile_time)
 {
     const char date[12] = {__DATE__};
@@ -30,7 +51,7 @@ static void get_compile_time(rtc_date_time_t *compile_time)
     compile_time->year = 2000;
 
     /* Month */
-    ptr = date;
+    ptr = find_field(date, ' ', 0);
     length = (uint8_t)(strchr(ptr, ' ') - ptr);
     strncpy(buffer, ptr, length);
     buffer[length] = '\0';
@@ -43,41 +64,35 @@ static void get_compile_time(rtc_date_time_t *compile_time)
     }
     
     /* Day */
-    ptr = date;
-    ptr = strchr(ptr, ' ') + strlen(" ");
+    ptr = find_field(date, ' ', 1);
     length = (uint8_t)(strchr(ptr, ' ') - ptr);
     strncpy(buffer, ptr, length);
     buffer[length] = '\0';
     compile_time->day = atoi(buffer);
 
     /* Year */
-    ptr = date;
-    ptr = strchr(ptr, ' ') + strlen(" ");
-    ptr = strchr(ptr, ' ') + strlen(" ");
+    ptr = find_field(date, ' ', 2);
     length = (uint8_t)(strchr(ptr, '\0') - ptr);
     strncpy(buffer, ptr, length);
     buffer[length] = '\0';
     compile_time->year = atoi(buffer);
 
     /* Hour */
-    ptr = time;
+    ptr = find_field(time, ':', 0);
     length = (uint8_t)(strchr(ptr, ':') - ptr);
     strncpy(buffer, ptr, length);
     buffer[length] = '\0';
     compile_time->hour = atoi(buffer);
 
     /* Minute */
-    ptr = time;
-    ptr = strchr(ptr, ':') + strlen(":");
+    ptr = find_field(time, ':', 1);
     length = (uint8_t)(strchr(ptr, ':') - ptr);
     strncpy(buffer, ptr, length);
     buffer[length] = '\0';
     compile_time->min = atoi(buffer);
 
     /* Second */
-    ptr = time;
-    ptr = strchr(ptr, ':') + strlen(":");
-    ptr = strchr(ptr, ':') + strlen(":");
+    ptr = find_field(time, ':', 2);
     length = (uint8_t)(strchr(ptr, '\0') - ptr);
     strncpy(buffer, ptr, length);
     buffer[length] = '\0';
