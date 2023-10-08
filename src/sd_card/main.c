@@ -6,7 +6,7 @@
 #include "sdcard.h"
 
 #define TIMES_FOR_TEST      200
-#define SECS_PER_TIMES      10
+#define SECS_PER_TIMES      100
 #define START_SEC_FOR_TEST  10000
 
 /* Buffer for read/write speed test */
@@ -98,6 +98,10 @@ int main(void)
     printf("[Read]Size: %fMB\n", (float)(TIMES_FOR_TEST * SECS_PER_TIMES * cardinfo.CardBlockSize) / (1u << 20));
     printf("[Read]Time: %fS\n", (float)time_read / 1000000.0);
     printf("[Read]Speed: %fMB/S\n", ((float)(TIMES_FOR_TEST * SECS_PER_TIMES * cardinfo.CardBlockSize) / (1u << 20)) / ((float)time_read / 1000000.0));
+
+    /* Free memory used for read/write buffer */
+    iomem_free(rbuff);
+    iomem_free(wbuff);
 
     while (1)
     {
