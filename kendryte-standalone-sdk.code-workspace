@@ -22,6 +22,9 @@
 			"path": "src/sd_card"
 		},
 		{
+			"path": "src/sd_card_filesystem"
+		},
+		{
 			"path": "src/yolo_20classes"
 		}
 	]
