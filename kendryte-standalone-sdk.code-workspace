@@ -25,6 +25,9 @@
 			"path": "src/sd_card_filesystem"
 		},
 		{
+			"path": "src/lvgl_porting"
+		},
+		{
 			"path": "src/yolo_20classes"
 		}
 	]
