@@ -20,12 +20,12 @@ static void lcd_write_data_8b(uint8_t *dat, uint32_t len)
     spi_send_data_normal_dma(LCD_SPI_DMA_CH, LCD_SPI, LCD_SPI_CS_NUM, dat, len, SPI_TRANS_CHAR);
 }
 
-static void lcd_write_data_32b(uint32_t *dat, uint32_t len)
+static void lcd_write_data_16b(uint16_t *dat, uint32_t len)
 {
     gpiohs_set_pin(LCD_DCX_GPIOHS_NUM, GPIO_PV_HIGH);
-    spi_init(LCD_SPI, SPI_WORK_MODE_0, SPI_FF_OCTAL, 32, 0);
-    spi_init_non_standard(LCD_SPI, 0, 32, 0, SPI_AITM_AS_FRAME_FORMAT);
-    spi_send_data_normal_dma(LCD_SPI_DMA_CH, LCD_SPI, LCD_SPI_CS_NUM, dat, len, SPI_TRANS_INT);
+    spi_init(LCD_SPI, SPI_WORK_MODE_0, SPI_FF_OCTAL, 16, 0);
+    spi_init_non_standard(LCD_SPI, 0, 16, 0, SPI_AITM_AS_FRAME_FORMAT);
+    spi_send_data_normal_dma(LCD_SPI_DMA_CH, LCD_SPI, LCD_SPI_CS_NUM, dat, len, SPI_TRANS_SHORT);
 }
 
 static void lcd_write_data_32b_fill(uint32_t *dat, uint32_t len)
@@ -149,7 +149,7 @@ void lcd_draw_picture(uint16_t x, uint16_t y, uint16_t width, uint16_t height, u
     uint32_t length = width * height;
 
     lcd_set_area(x, y, x + width - 1, y + height - 1);
-    lcd_write_data_32b((uint32_t *)pic, length >> 1);
+    lcd_write_data_16b(pic, length);
 }
 
 void lcd_set_direction(lcd_dir_t dir)
